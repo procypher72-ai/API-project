@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlogSphere &bull; REST API & Interactive Client</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <span class="brand-title">BlogSphere</span>
+          <span class="brand-badge">Node.js + MongoDB API</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-btn active" data-tab="feed">Explore Feed</button>
+        <button class="nav-btn" data-tab="create" id="navCreateBtn">Write Post</button>
+        <button class="nav-btn" data-tab="tester">API Console</button>
+        <button class="nav-btn" data-tab="docs">Endpoints</button>
+      </nav>
+
+      <div class="auth-section" id="authSection">
+        <!-- Injected via JavaScript based on login state -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    
+    <!-- Tab 1: Blog Feed View -->
+    <section id="tab-feed" class="tab-panel active">
+      <div class="hero-banner">
+        <div class="hero-content">
+          <h1>Modern Blog Engine &amp; Auth API</h1>
+          <p>Full-featured Node.js, Express &amp; MongoDB backend with JWT authentication, role management, comments, and real-time interaction.</p>
+          <div class="stats-row" id="statsRow">
+            <div class="stat-pill"><span id="statPostsCount">0</span> Posts</div>
+            <div class="stat-pill"><span id="statUsersCount">3</span> Seed Users</div>
+            <div class="stat-pill"><span class="status-indicator"></span> API Online</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls: Search & Category filter -->
+      <div class="feed-controls">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search posts by title, topic or content...">
+        </div>
+
+        <div class="category-filters" id="categoryFilters">
+          <button class="cat-pill active" data-cat="">All</button>
+          <button class="cat-pill" data-cat="Technology">Technology</button>
+          <button class="cat-pill" data-cat="Security">Security</button>
+          <button class="cat-pill" data-cat="Database">Database</button>
+        </div>
+      </div>
+
+      <!-- Posts Grid -->
+      <div class="posts-grid" id="postsGrid">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading published articles...</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-controls" id="paginationControls"></div>
+    </section>
+
+    <!-- Tab 2: Create / Edit Post -->
+    <section id="tab-create" class="tab-panel">
+      <div class="form-card">
+        <div class="card-header">
+          <h2 id="formTitle">Create New Blog Article</h2>
+          <p>Draft and publish blog posts. Requires an active authentication token.</p>
+        </div>
+        
+        <div id="createAuthWarning" class="alert-box alert-warning hidden">
+          ⚠️ You must be logged in to publish a post. Please log in or register using the button in the top right.
+        </div>
+
+        <form id="postForm">
+          <input type="hidden" id="editPostId" value="">
+          <div class="form-group">
+            <label for="postTitle">Article Title *</label>
+            <input type="text" id="postTitle" required placeholder="e.g., Building Scalable Microservices with Node.js">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="postCategory">Category</label>
+              <select id="postCategory">
+                <option value="Technology">Technology</option>
+                <option value="Security">Security</option>
+                <option value="Database">Database</option>
+                <option value="Architecture">Architecture</option>
+                <option value="Tutorial">Tutorial</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="postTags">Tags (comma separated)</label>
+              <input type="text" id="postTags" placeholder="e.g. nodejs, express, mongodb">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="postCover">Cover Image URL</label>
+            <input type="url" id="postCover" placeholder="https://images.unsplash.com/photo-...">
+          </div>
+
+          <div class="form-group">
+            <label for="postContent">Article Body (Markdown or Plain Text) *</label>
+            <textarea id="postContent" rows="8" required placeholder="Write your full article content here..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="savePostBtn">Publish Article</button>
+            <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display:none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Tab 3: Interactive Live API Console -->
+    <section id="tab-tester" class="tab-panel">
+      <div class="api-console-layout">
+        <div class="console-sidebar">
+          <h3>Quick Endpoints</h3>
+          <div class="endpoint-list">
+            <div class="endpoint-item" data-method="POST" data-endpoint="/api/auth/register">
+              <span class="badge post">POST</span> /api/auth/register
+            </div>
+            <div class="endpoint-item" data-method="POST" data-endpoint="/api/auth/login">
+              <span class="badge post">POST</span> /api/auth/login
+            </div>
+            <div class="endpoint-item" data-method="GET" data-endpoint="/api/auth/me">
+              <span class="badge get">GET</span> /api/auth/me
+            </div>
+            <div class="endpoint-item" data-method="GET" data-endpoint="/api/posts">
+              <span class="badge get">GET</span> /api/posts
+            </div>
+            <div class="endpoint-item" data-method="POST" data-endpoint="/api/posts">
+              <span class="badge post">POST</span> /api/posts
+            </div>
+            <div class="endpoint-item" data-method="POST" data-endpoint="/api/comments">
+              <span class="badge post">POST</span> /api/comments
+            </div>
+            <div class="endpoint-item" data-method="GET" data-endpoint="/api/health">
+              <span class="badge get">GET</span> /api/health
+            </div>
+          </div>
+        </div>
+
+        <div class="console-main">
+          <div class="request-builder">
+            <div class="url-bar">
+              <select id="apiMethod">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+              </select>
+              <input type="text" id="apiUrl" value="/api/posts">
+              <button class="btn btn-primary" id="sendRequestBtn">Send Request</button>
+            </div>
+
+            <div class="headers-token-bar">
+              <label>Authorization Token:</label>
+              <input type="text" id="apiTokenInput" placeholder="Bearer <jwt-token> (Auto-filled if logged in)">
+            </div>
+
+            <div class="payload-box">
+              <label>JSON Request Body:</label>
+              <textarea id="apiBody" rows="6" placeholder='{ "key": "value" }'></textarea>
+            </div>
+          </div>
+
+          <div class="response-viewer">
+            <div class="response-header">
+              <span>Response Output</span>
+              <span class="status-badge" id="responseStatus">-</span>
+              <span class="time-badge" id="responseTime">-</span>
+            </div>
+            <pre id="responseJson">Click 'Send Request' or select an endpoint from the left menu to inspect live JSON.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 4: API Documentation -->
+    <section id="tab-docs" class="tab-panel">
+      <div class="docs-container">
+        <h2>RESTful API Reference &amp; Specifications</h2>
+        <p class="docs-sub">Use these routes with Postman, Insomnia, curl, or frontend frameworks.</p>
+
+        <div class="doc-card">
+          <h3 class="auth-heading">🔐 Authentication Routes (<code>/api/auth</code>)</h3>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge post">POST</span></td>
+                <td><code>/api/auth/register</code></td>
+                <td>Public</td>
+                <td>Create a new user account (<code>name, email, password, bio</code>)</td>
+              </tr>
+              <tr>
+                <td><span class="badge post">POST</span></td>
+                <td><code>/api/auth/login</code></td>
+                <td>Public</td>
+                <td>Authenticate user &amp; receive JWT bearer token (<code>email, password</code>)</td>
+              </tr>
+              <tr>
+                <td><span class="badge get">GET</span></td>
+                <td><code>/api/auth/me</code></td>
+                <td>Bearer Token</td>
+                <td>Fetch currently logged in user profile</td>
+              </tr>
+              <tr>
+                <td><span class="badge put">PUT</span></td>
+                <td><code>/api/auth/profile</code></td>
+                <td>Bearer Token</td>
+                <td>Update profile details (name, bio, avatar)</td>
+              </tr>
+              <tr>
+                <td><span class="badge put">PUT</span></td>
+                <td><code>/api/auth/change-password</code></td>
+                <td>Bearer Token</td>
+                <td>Change password (<code>currentPassword, newPassword</code>)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="doc-card">
+          <h3 class="post-heading">📝 Blog Post Routes (<code>/api/posts</code>)</h3>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge get">GET</span></td>
+                <td><code>/api/posts</code></td>
+                <td>Public</td>
+                <td>Get published posts (supports <code>?search=</code>, <code>?category=</code>, <code>?page=</code>, <code>?limit=</code>)</td>
+              </tr>
+              <tr>
+                <td><span class="badge get">GET</span></td>
+                <td><code>/api/posts/:idOrSlug</code></td>
+                <td>Public</td>
+                <td>Get single post by MongoDB ID or slug with comments &amp; auto-increment views</td>
+              </tr>
+              <tr>
+                <td><span class="badge post">POST</span></td>
+                <td><code>/api/posts</code></td>
+                <td>Bearer Token</td>
+                <td>Create a new article (author set automatically from JWT)</td>
+              </tr>
+              <tr>
+                <td><span class="badge put">PUT</span></td>
+                <td><code>/api/posts/:id</code></td>
+                <td>Author / Admin</td>
+                <td>Update title, content, cover, tags, or category</td>
+              </tr>
+              <tr>
+                <td><span class="badge del">DELETE</span></td>
+                <td><code>/api/posts/:id</code></td>
+                <td>Author / Admin</td>
+                <td>Delete post and all attached comments</td>
+              </tr>
+              <tr>
+                <td><span class="badge post">POST</span></td>
+                <td><code>/api/posts/:id/like</code></td>
+                <td>Bearer Token</td>
+                <td>Toggle like / unlike on an article</td>
+              </tr>
+              <tr>
+                <td><span class="badge get">GET</span></td>
+                <td><code>/api/posts/user/me</code></td>
+                <td>Bearer Token</td>
+                <td>Fetch all posts written by the logged-in user</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="doc-card">
+          <h3 class="comment-heading">💬 Comment Routes (<code>/api/comments</code>)</h3>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge post">POST</span></td>
+                <td><code>/api/comments</code></td>
+                <td>Bearer Token</td>
+                <td>Add comment to post (<code>{ postId, content }</code>)</td>
+              </tr>
+              <tr>
+                <td><span class="badge get">GET</span></td>
+                <td><code>/api/comments/post/:postId</code></td>
+                <td>Public</td>
+                <td>Retrieve all comments belonging to a specific post</td>
+              </tr>
+              <tr>
+                <td><span class="badge del">DELETE</span></td>
+                <td><code>/api/comments/:id</code></td>
+                <td>Author / Admin</td>
+                <td>Delete a comment by its ID</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Post Detail Modal -->
+  <div class="modal-backdrop" id="postModal">
+    <div class="modal-card">
+      <button class="modal-close" id="closeModalBtn">&times;</button>
+      <div id="modalBody">
+        <!-- Populated via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal (Login / Register) -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal-card auth-modal-card">
+      <button class="modal-close" id="closeAuthModalBtn">&times;</button>
+      
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tabLoginBtn">Sign In</button>
+        <button class="auth-tab-btn" id="tabRegisterBtn">Create Account</button>
+      </div>
+
+      <!-- Quick demo accounts banner -->
+      <div class="demo-accounts-pill">
+        <span>⚡ Quick Fill Demo:</span>
+        <button type="button" class="quick-fill-btn" data-email="alex@example.com" data-pass="password123">Alex (Admin)</button>
+        <button type="button" class="quick-fill-btn" data-email="sarah@example.com" data-pass="password123">Sarah (User)</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="auth-form active">
+        <div class="form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" required placeholder="name@example.com">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••">
+        </div>
+        <div id="loginError" class="alert-box alert-error hidden"></div>
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" class="auth-form">
+        <div class="form-group">
+          <label for="regName">Full Name</label>
+          <input type="text" id="regName" required placeholder="e.g. John Doe">
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email Address</label>
+          <input type="email" id="regEmail" required placeholder="john@example.com">
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Password (minimum 6 characters)</label>
+          <input type="password" id="regPassword" required minlength="6" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label for="regBio">Bio (optional)</label>
+          <input type="text" id="regBio" placeholder="Tell us a little about yourself">
+        </div>
+        <div id="registerError" class="alert-box alert-error hidden"></div>
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
